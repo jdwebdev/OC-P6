@@ -1,26 +1,34 @@
 const express = require("express");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const path = require("path")
+
+const sauceRoutes = require("./routes/sauces");
+const userRoutes = require("./routes/user");
 
 //Pour créer une application express
 const app = express();
 
+mongoose.connect("mongodb+srv://user_01:jN9VTuQGGhUM3hk@cluster0.dqmrc.mongodb.net/<dbname>?retryWrites=true&w=majority",
+
+    { useNewUrlParser: true,
+    useUnifiedTopology: true })
+    .then(() => console.log("Connexion à MongoDB réussie !"))
+    .catch(() => console.log("Connexion à MongoDB échouée !"));
+
 app.use((req, res, next) => {
-    console.log("Requête reçue !");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content, Accept, Content-Type, Authorization");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
     next();
 });
 
-app.use((req, res, next) => {
-    res.status(201);
-    next();
-});
+//Transformer le corps de la requête en objet javascript utilisable grâce à la méthode json() de bodyParser
+app.use(bodyParser.json()); 
 
-app.use((req, res, next) => {
-    // On utilise l'objet res et la méthode json() pour renvoyer une réponse en json
-    res.json({message: "Votre requête a bien été reçue"});
-    next();
-});
+app.use("/images", express.static(path.join(__dirname, "images")));
 
-app.use((res,req) => {
-    console.log("La réponse a été envoyée avec succès");
-})
+app.use("/api/sauces", sauceRoutes);
+app.use("/api/auth", userRoutes);
 
 module.exports = app;
