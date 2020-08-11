@@ -44,7 +44,6 @@ exports.modifySauce = (req, res, next) => {
         
     Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
         .then(() => { 
-            console.log("updateOne");
             res.status(200).json({ message: "Objet modifié !"})
         })
         .catch(error => res.status(400).json({ error }));
@@ -63,5 +62,64 @@ exports.deleteSauce = (req, res, next) => {
         .catch(error => res.status(500).json({ error }));
 };
 
+exports.likeDislikeSauce = (req, res, next) => {
+    console.log(req.body);
+    const userId = req.body.userId;
+    const like = req.body.like;
 
+    Sauce.findOne({ _id: req.params.id })
+        .then( sauce => {
+
+            // console.log(sauce);
+
+            // const usersliked = sauce.usersliked;
+            switch (like) {
+                case 1 : 
+                    console.log("j'aime !");
+                    // sauce.likes++;
+                    // sauce.usersLiked.push(userId);
+                    Sauce.updateOne({ _id: req.params.id }, { $inc:{likes: +1}, $push:{usersLiked: userId}, _id: req.params.id })
+                        .then(() => {
+                            console.log("Update OK");
+                            res.status(200).json({ message: "Like !"});
+                        })
+                        .catch(error => res.status(400).json({ error }));  //Erreur 400 ???????
+                    break;
+                case 0 : 
+                    console.log("J'arrête d'aimer/pas aimer");
+                    if (sauce.usersLiked.includes(userId)) {
+                        Sauce.updateOne({ _id: req.params.id }, { $inc:{likes: -1}, $pull:{usersLiked: userId}, _id: req.params.id })
+                            .then(() => {
+                                console.log("Update OK");
+                                res.status(200).json({ message: "Stop Like !"});
+                            })
+                            .catch(error => res.status(400).json({ error }));  //Erreur 400 ???????
+                    } 
+                    else if (sauce.usersDisliked.includes(userId)) {
+                        Sauce.updateOne({ _id: req.params.id }, { $inc:{dislikes: -1}, $pull:{usersDisliked: userId}, _id: req.params.id })
+                        .then(() => {
+                            console.log("Update OK");
+                            res.status(200).json({ message: "Stop Dislike !"});
+                        })
+                        .catch(error => res.status(400).json({ error }));  //Erreur 400 ???????
+                    }     
+                    break;
+                case -1 : 
+                    console.log("je n'aime pas !");
+                    Sauce.updateOne({ _id: req.params.id }, { $inc:{dislikes: +1}, $push:{usersDisliked: userId}, _id: req.params.id })
+                        .then(() => {
+                            console.log("Update OK");
+                            res.status(200).json({ message: "Dislike !"});
+                        })
+                        .catch(error => res.status(400).json({ error }));  //Erreur 400 ???????
+                    break;
+                default : 
+                    console.log("error");
+            }
+        })
+        .catch(error => {
+            console.log("error ici");
+            res.status(404).json({ error })
+        });  //Erreur 404 ???????
+};
 
