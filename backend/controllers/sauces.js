@@ -1,5 +1,6 @@
 const Sauce = require("../models/Sauce");
 const fs = require("fs"); //package filesystem de node. Pour avoir accès aux différentes opérations liées aux fichiers
+const sanitize = require("mongo-sanitize");
 
 exports.getAllSauces = (req, res, next) => {
     Sauce.find()
@@ -16,7 +17,8 @@ exports.getOneSauce = (req, res, next) => {
 };
 
 exports.createSauce = (req, res, next) => {
-    const sauceObject = JSON.parse(req.body.sauce);
+    const sauceParse = JSON.parse(req.body.sauce);
+    const sauceObject = sanitize(sauceParse);
     delete req.body._id;
     const sauce = new Sauce({
         ...sauceObject,
@@ -29,6 +31,7 @@ exports.createSauce = (req, res, next) => {
 
 exports.modifySauce = (req, res, next) => {
     let sauceObject = {};
+    const body = sanitize(req.body);
     req.file ? (
         Sauce.findOne({ _id: req.params.id })
             .then( sauce => {
@@ -37,10 +40,10 @@ exports.modifySauce = (req, res, next) => {
             }).catch(error => res.status(500).json({ error })), 
             
             sauceObject = {  
-                ...JSON.parse(req.body.sauce),
+                ...JSON.parse(body.sauce),
                 imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
             }
-    ) : sauceObject = { ...req.body };
+    ) : sauceObject = { ...body };
         
     Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
         .then(() => { 

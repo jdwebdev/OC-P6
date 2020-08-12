@@ -1,13 +1,15 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
 const User = require("../models/User");
+const sanitize = require("mongo-sanitize");
 
 exports.signup = (req, res, next) => {
-    bcrypt.hash(req.body.password, 10)
+    const email = sanitize(req.body.email);
+    const password = sanitize(req.body.password);
+    bcrypt.hash(password, 10)
         .then(hash => {
             const user = new User({
-                email: req.body.email,
+                email: email,
                 password: hash
             });
             user.save()
@@ -17,12 +19,14 @@ exports.signup = (req, res, next) => {
         .catch(error => res.status(500).json({ error }));
 };
 exports.login = (req, res, next) => {
-    User.findOne({ email: req.body.email})
+    const email = sanitize(req.body.email);
+    const password = sanitize(req.body.password);
+    User.findOne({ email: email})
         .then(user => {
             if (!user) {
                 return res.status(401).json({ error: "Utilisateur non trouvé"});
             }
-            bcrypt.compare(req.body.password, user.password)
+            bcrypt.compare(password, user.password)
                 .then(valid => {
                     if (!valid) {
                         return res.status(401).json({ error: "Mot de passe incorrect !"});
