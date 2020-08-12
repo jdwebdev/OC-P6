@@ -9,8 +9,8 @@ const userRoutes = require("./routes/user");
 //Pour créer une application express
 const app = express();
 
-mongoose.connect("mongodb+srv://user_01:jN9VTuQGGhUM3hk@cluster0.dqmrc.mongodb.net/<dbname>?retryWrites=true&w=majority",
-
+require("dotenv").config();
+mongoose.connect(process.env.DB_CONNECT,
     { useNewUrlParser: true,
     useUnifiedTopology: true })
     .then(() => console.log("Connexion à MongoDB réussie !"))
