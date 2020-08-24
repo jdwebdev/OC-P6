@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const path = require("path")
+const path = require("path");
 const helmet = require("helmet");
 
 const sauceRoutes = require("./routes/sauces");
@@ -19,6 +19,7 @@ mongoose.connect(process.env.DB_CONNECT,
 
 app.use(helmet());
 
+// Système de sécurité CORS : Cross Origin Resource Sharing
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content, Accept, Content-Type, Authorization");
